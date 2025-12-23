@@ -51,7 +51,7 @@ curl や iOS ショートカットなどから気軽に叩く
 
 ---
 
-### 2. 起動
+### 2. 起動（HTTP サーバー）
 
     go run cmd/server/main.go
 
@@ -59,7 +59,18 @@ curl や iOS ショートカットなどから気軽に叩く
 
 ---
 
-## 使い方
+### 3. 起動（CLI）
+
+HTTP サーバーを立てずに、  
+コマンドラインから直接要約することもできます。
+
+    go run cmd/cli/main.go https://www.youtube.com/watch?v=xxxx
+
+標準出力に要約結果がそのまま表示されます。
+
+---
+
+## 使い方（HTTP）
 
 ### POST /summarize
 
