@@ -1,0 +1,43 @@
+# ===== Go build artifacts =====
+/bin/
+/dist/
+/*.exe
+/*.exe~
+/*.dll
+/*.so
+/*.dylib
+*.test
+*.out
+
+# ===== Go workspace =====
+/vendor/
+/go.work
+/go.work.sum
+
+# ===== IDE / Editor =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===== Environment variables =====
+.env
+.env.*
+!.env.example
+
+# ===== Runtime / temporary =====
+/tmp/
+/temp/
+/logs/
+*.log
+
+# ===== yt-dlp artifacts =====
+*.vtt
+*.srt
+*.ass
+*.json
+
+# ===== OS =====
+Thumbs.db
