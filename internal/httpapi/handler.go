@@ -45,7 +45,7 @@ func SummarizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Debug.Printf("summary: %s", text)
+	logger.Debug.Printf("summary: %s", summary)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte(summary))
