@@ -31,15 +31,16 @@ func SummarizeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
 
-	text, err := subtitle.FetchAndClean(ctx, url)
+	info, err := subtitle.FetchVideoInfo(ctx, url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	logger.Debug.Printf("cleaned subtitle text: %s", text)
+	logger.Debug.Printf("video title: %s", info.Title)
+	logger.Debug.Printf("cleaned video subtitle text: %s", info.Text)
 
-	summary, err := summarizer.Summarize(ctx, text)
+	summary, err := summarizer.Summarize(ctx, info)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -48,5 +49,5 @@ func SummarizeHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Debug.Printf("summary: %s", summary)
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Write([]byte(summary))
+	w.Write([]byte(info.Title + "\n\n" + summary))
 }

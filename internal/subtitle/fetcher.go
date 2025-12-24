@@ -8,7 +8,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
+
+type VideoInfo struct {
+	Title string
+	Text  string
+}
 
 func validateYoutubeURL(value string) error {
 	u, err := url.ParseRequestURI(value)
@@ -28,7 +34,25 @@ func validateYoutubeURL(value string) error {
 	return nil
 }
 
-func FetchAndClean(ctx context.Context, url string) (string, error) {
+func fetchTitle(ctx context.Context, url string) (string, error) {
+	cmd := exec.CommandContext(
+		ctx,
+		"yt-dlp",
+		"--quiet",
+		"--no-warnings",
+		"--print",
+		"%(title)s",
+		url,
+	)
+
+	out, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+func fetchAndClean(ctx context.Context, url string) (string, error) {
 	if err := validateYoutubeURL(url); err != nil {
 		return "", err
 	}
@@ -69,4 +93,21 @@ func FetchAndClean(ctx context.Context, url string) (string, error) {
 	}
 
 	return cleanVTT(string(raw)), nil
+}
+
+func FetchVideoInfo(ctx context.Context, url string) (*VideoInfo, error) {
+	title, err := fetchTitle(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	text, err := fetchAndClean(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	return &VideoInfo{
+		Title: title,
+		Text:  text,
+	}, nil
 }

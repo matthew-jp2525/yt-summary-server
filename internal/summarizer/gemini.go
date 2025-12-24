@@ -9,19 +9,28 @@ import (
 	"net/http"
 
 	"github.com/matthew-jp2525/yt-summary-server/internal/config"
+	"github.com/matthew-jp2525/yt-summary-server/internal/subtitle"
 )
 
 const promptTemplate = `
-以下は Youtube 動画の字幕テキストです。
+# 指示
+以下の Youtube 動画の字幕を要約してください。
 
-この字幕の内容をもとに、次の条件で要約し、要約文のみ出力してください。
-
+# 条件
 - 日本語で書く
 - 内容の全体像が分かることを重視する
 - 箇条書きではなく、読みやすい文章にする
 - 話者の主張や論点が分かるようにする
 - 細かすぎる冗長な部分は省く
 - 4000文字程度でまとめる
+
+# 出力
+要約文のみ出力してください。
+
+------
+
+動画タイトル:
+%s
 
 字幕テキスト:
 %s
@@ -33,8 +42,8 @@ func SetConfig(c *config.Config) {
 	cfg = c
 }
 
-func Summarize(ctx context.Context, text string) (string, error) {
-	prompt := fmt.Sprintf(promptTemplate, text)
+func Summarize(ctx context.Context, info *subtitle.VideoInfo) (string, error) {
+	prompt := fmt.Sprintf(promptTemplate, info.Title, info.Text)
 
 	payload := map[string]any{
 		"contents": []map[string]any{

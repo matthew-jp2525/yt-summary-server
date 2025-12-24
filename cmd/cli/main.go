@@ -38,17 +38,17 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	text, err := subtitle.FetchAndClean(ctx, url)
+	info, err := subtitle.FetchVideoInfo(ctx, url)
 	if err != nil {
 		logger.Error.Printf("failed: %v", err)
 		os.Exit(1)
 	}
 
-	summary, err := summarizer.Summarize(ctx, text)
+	summary, err := summarizer.Summarize(ctx, info)
 	if err != nil {
 		logger.Error.Printf("failed: %v", err)
 		os.Exit(1)
 	}
 
-	fmt.Println(summary)
+	fmt.Println(info.Title + "\n\n" + summary)
 }
