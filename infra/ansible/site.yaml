@@ -90,11 +90,11 @@
       systemd:
         daemon_reload: yes
 
-    - name: Enable and start yt-summary-server
+    - name: Enable and restart yt-summary-server
       systemd:
         name: yt-summary-server
         enabled: yes
-        state: started
+        state: restarted
 
     - name: Obtain Let's Encrypt certificate
       command: >

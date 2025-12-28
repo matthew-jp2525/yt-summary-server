@@ -10,6 +10,7 @@ import (
 	"github.com/matthew-jp2525/yt-summary-server/internal/config"
 	"github.com/matthew-jp2525/yt-summary-server/internal/httpapi"
 	"github.com/matthew-jp2525/yt-summary-server/internal/logger"
+	"github.com/matthew-jp2525/yt-summary-server/internal/subtitle"
 	"github.com/matthew-jp2525/yt-summary-server/internal/summarizer"
 )
 
@@ -21,6 +22,7 @@ func main() {
 	logger.Init(cfg.Debug)
 
 	httpapi.SetConfig(&cfg)
+	subtitle.SetConfig(&cfg)
 	summarizer.SetConfig(&cfg)
 
 	mux := http.NewServeMux()
@@ -33,6 +35,10 @@ func main() {
 		Handler:      mux,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 2 * time.Minute,
+	}
+
+	if cfg.YTDLCookiePath != nil {
+		log.Printf("using cookies: %q", *cfg.YTDLCookiePath)
 	}
 
 	log.Printf("listening on %s", addr)

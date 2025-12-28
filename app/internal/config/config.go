@@ -9,18 +9,30 @@ import (
 type Config struct {
 	Port string
 
-	GeminiAPIKey string
-	YTDLPPath    string
+	GeminiAPIKey   string
+	YTDLPPath      string
+	YTDLCookiePath *string
 
 	Debug bool
 }
 
 func Load() Config {
+	var ytdlCookiePath *string
+	maybeYTDLCookiePath := os.Getenv("YTDLP_COOKIE_PATH")
+
+	if maybeYTDLCookiePath != "" {
+		_, err := os.Stat(maybeYTDLCookiePath)
+		if err == nil {
+			ytdlCookiePath = &maybeYTDLCookiePath
+		}
+	}
+
 	return Config{
 		Port: getOr("PORT", "8080"),
 
-		GeminiAPIKey: mustGet("GEMINI_API_KEY"),
-		YTDLPPath:    getOr("YTDLP_PATH", "yt-dlp"),
+		GeminiAPIKey:   mustGet("GEMINI_API_KEY"),
+		YTDLPPath:      getOr("YTDLP_PATH", "yt-dlp"),
+		YTDLCookiePath: ytdlCookiePath,
 
 		Debug: getBool("DEBUG"),
 	}

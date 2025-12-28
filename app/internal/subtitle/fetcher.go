@@ -9,11 +9,19 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/matthew-jp2525/yt-summary-server/internal/config"
 )
 
 type VideoInfo struct {
 	Title string
 	Text  string
+}
+
+var cfg *config.Config
+
+func SetConfig(c *config.Config) {
+	cfg = c
 }
 
 func validateYoutubeURL(value string) error {
@@ -35,15 +43,20 @@ func validateYoutubeURL(value string) error {
 }
 
 func fetchTitle(ctx context.Context, url string) (string, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		"yt-dlp",
+	args := []string{
 		"--quiet",
 		"--no-warnings",
 		"--print",
 		"%(title)s",
-		url,
-	)
+	}
+
+	if cfg.YTDLCookiePath != nil {
+		args = append(args, "--cookies", *cfg.YTDLCookiePath)
+	}
+
+	args = append(args, url)
+
+	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -65,9 +78,7 @@ func fetchAndClean(ctx context.Context, url string) (string, error) {
 
 	outTemplate := filepath.Join(tmpDir, "sub")
 
-	cmd := exec.CommandContext(
-		ctx,
-		"yt-dlp",
+	args := []string{
 		"--quiet",
 		"--no-warnings",
 		"--skip-download",
@@ -75,8 +86,15 @@ func fetchAndClean(ctx context.Context, url string) (string, error) {
 		"--sub-lang", "ja",
 		"--sub-format", "vtt",
 		"-o", outTemplate,
-		url,
-	)
+	}
+
+	if cfg.YTDLCookiePath != nil {
+		args = append(args, "--cookies", *cfg.YTDLCookiePath)
+	}
+
+	args = append(args, url)
+
+	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
 
 	if err := cmd.Run(); err != nil {
 		return "", err
