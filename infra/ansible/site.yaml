@@ -1,0 +1,119 @@
+---
+- name: Setup yt-summary-server environment
+  hosts: ytsumserver
+  become: true
+
+  vars:
+    # domain_name: example.com
+    # email: you@example.com
+    app_user: yt-summary
+    app_dir: /opt/yt-summary-server
+    app_binary: /opt/yt-summary-server/yt-summary-server
+    app_port: 8080
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+          - yt-dlp
+        state: present
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /usr/sbin/nologin
+        create_home: no
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+# 
+#   以下、初回のみ必要。以降はcertbotに任せる。
+#
+#   - name: Configure nginx reverse proxy
+#     template:
+#       src: nginx/sites-available/yt-summary-server.conf.j2
+#       dest: /etc/nginx/sites-available/yt-summary-server.conf
+#     notify:
+#       - Reload nginx
+# 
+    - name: Enable nginx site
+      file:
+        src: /etc/nginx/sites-available/yt-summary-server.conf
+        dest: /etc/nginx/sites-enabled/yt-summary-server.conf
+        state: link
+        force: yes
+
+    - name: Disable default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Test nginx config
+      command: nginx -t
+      changed_when: false
+
+    - name: Create env file directory
+      file:
+        path: /etc/yt-summary-server
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Create env file for yt-summary-server
+      template:
+        src: yt-summary-server/env.j2
+        dest: /etc/yt-summary-server/env
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Create systemd service for yt-summary-server
+      template:
+        src: yt-summary-server/yt-summary-server.service.j2
+        dest: /etc/systemd/system/yt-summary-server.service
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start yt-summary-server
+      systemd:
+        name: yt-summary-server
+        enabled: yes
+        state: started
+
+    - name: Obtain Let's Encrypt certificate
+      command: >
+        certbot --nginx
+        -d {{ domain_name }}
+        --non-interactive
+        --agree-tos
+        -m {{ email }}
+      args:
+        creates: "/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem"
+
+    - name: Ensure certbot timer is enabled
+      systemd:
+        name: certbot.timer
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded

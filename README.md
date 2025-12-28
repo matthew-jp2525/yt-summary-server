@@ -35,7 +35,7 @@ curl や iOS ショートカットなどから気軽に叩く
 
 ## 依存関係
 
-- Go 1.22 以上  
+- Go 1.25 以上  
 - yt-dlp（PATH に存在すること）  
 - Gemini API Key（Google AI Studio）  
 

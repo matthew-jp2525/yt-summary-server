@@ -1,0 +1,2 @@
+[ytsumserver]
+your.server.ip.or.hostname ansible_user=foo

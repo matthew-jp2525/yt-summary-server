@@ -1,0 +1,4 @@
+inventory
+venv
+group_vars/**/vault.yaml
+host_vars/**/local.yaml

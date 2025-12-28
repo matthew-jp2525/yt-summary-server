@@ -1,0 +1,16 @@
+[Unit]
+Description=yt-summary-server
+After=network.target
+
+[Service]
+User={{ app_user }}
+Group={{ app_user }}
+ExecStart={{ app_binary }}
+Restart=always
+RestartSec=5
+WorkingDirectory={{ app_dir }}
+EnvironmentFile=/etc/yt-summary-server/env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=multi-user.target
