@@ -33,6 +33,7 @@ func main() {
 
 	cfg := config.Load()
 	logger.Init(cfg.Debug)
+	subtitle.SetConfig(&cfg)
 	summarizer.SetConfig(&cfg)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)

@@ -50,8 +50,12 @@ func fetchTitle(ctx context.Context, url string) (string, error) {
 		"%(title)s",
 	}
 
-	if cfg.YTDLCookiePath != nil {
-		args = append(args, "--cookies", *cfg.YTDLCookiePath)
+	if cfg.YTDLPCookiePath != nil {
+		args = append(args, "--cookies", *cfg.YTDLPCookiePath)
+	}
+
+	if cfg.YTDLPUserAgent != nil {
+		args = append(args, "--user-agent", *cfg.YTDLPUserAgent)
 	}
 
 	args = append(args, url)
@@ -88,8 +92,12 @@ func fetchAndClean(ctx context.Context, url string) (string, error) {
 		"-o", outTemplate,
 	}
 
-	if cfg.YTDLCookiePath != nil {
-		args = append(args, "--cookies", *cfg.YTDLCookiePath)
+	if cfg.YTDLPCookiePath != nil {
+		args = append(args, "--cookies", *cfg.YTDLPCookiePath)
+	}
+
+	if cfg.YTDLPUserAgent != nil {
+		args = append(args, "--user-agent", *cfg.YTDLPUserAgent)
 	}
 
 	args = append(args, url)

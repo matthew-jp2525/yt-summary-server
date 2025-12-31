@@ -37,8 +37,12 @@ func main() {
 		WriteTimeout: 2 * time.Minute,
 	}
 
-	if cfg.YTDLCookiePath != nil {
-		log.Printf("using cookies: %q", *cfg.YTDLCookiePath)
+	if cfg.YTDLPCookiePath != nil {
+		log.Printf("using cookies: %q", *cfg.YTDLPCookiePath)
+	}
+
+	if cfg.YTDLPUserAgent != nil {
+		log.Printf("using user agent: %q", *cfg.YTDLPUserAgent)
 	}
 
 	log.Printf("listening on %s", addr)
