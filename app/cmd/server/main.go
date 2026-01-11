@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"log"
 	"net/http"
 	"time"
@@ -13,6 +14,41 @@ import (
 	"github.com/matthew-jp2525/yt-summary-server/internal/subtitle"
 	"github.com/matthew-jp2525/yt-summary-server/internal/summarizer"
 )
+
+func isAPIKeyAuthEnabled(env string, disable bool) bool {
+	if env == "prod" && disable {
+		log.Fatal("API key auth cannot be disabled in prod.")
+	}
+
+	if disable {
+		log.Println("WARNING: API key auth is DISABLED")
+		return false
+	}
+
+	return true
+}
+
+func apiKeyMiddleware(validKeys map[string]struct{}) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			key := r.Header.Get("X-API-Key")
+			if key == "" {
+				http.Error(w, "missing api key", http.StatusUnauthorized)
+				return
+			}
+
+			// 定数時間比較でチェック
+			for k := range validKeys {
+				if subtle.ConstantTimeCompare([]byte(key), []byte(k)) == 1 {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
+			http.Error(w, "invalid api key", http.StatusForbidden)
+		})
+	}
+}
 
 func main() {
 	_ = godotenv.Load()
@@ -28,11 +64,23 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/summarize", httpapi.SummarizeHandler)
 
+	authEnabled := isAPIKeyAuthEnabled(cfg.Env, cfg.DisableAPIKeyAuth)
+
+	var handler http.Handler = mux
+
+	if authEnabled {
+		if cfg.APIKeys == nil {
+			log.Fatal("API key auth enabled but APIKeys is not configured")
+		}
+
+		handler = apiKeyMiddleware(cfg.APIKeys)(handler)
+	}
+
 	addr := ":" + cfg.Port
 
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 2 * time.Minute,
 	}

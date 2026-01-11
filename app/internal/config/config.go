@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
 	Port string
+
+	APIKeys map[string]struct{}
 
 	GeminiAPIKey    string
 	YTDLPPath       string
@@ -15,7 +18,9 @@ type Config struct {
 	YTDLPUserAgent  *string
 	YTDLPJSRuntimes *string
 
-	Debug bool
+	Debug             bool
+	Env               string
+	DisableAPIKeyAuth bool
 }
 
 func Load() Config {
@@ -46,14 +51,36 @@ func Load() Config {
 	return Config{
 		Port: getOr("PORT", "8080"),
 
+		APIKeys: loadAPIKeys(getOr("YT_SUMMARY_SERVER_API_KEYS", "")),
+
 		GeminiAPIKey:    mustGet("GEMINI_API_KEY"),
 		YTDLPPath:       getOr("YTDLP_PATH", "yt-dlp"),
 		YTDLPCookiePath: ytdlpCookiePath,
 		YTDLPUserAgent:  ytdlpUserAgent,
 		YTDLPJSRuntimes: ytdlpJSRuntimes,
 
-		Debug: getBool("DEBUG"),
+		Debug:             getBool("DEBUG"),
+		Env:               getOr("YT_SUMMARY_SERVER_ENV", "prod"),
+		DisableAPIKeyAuth: getBool("DISABLE_API_KEY_AUTH"),
 	}
+}
+
+func loadAPIKeys(env string) map[string]struct{} {
+	keys := make(map[string]struct{})
+
+	for _, k := range strings.Split(env, ",") {
+		k = strings.TrimSpace(k)
+		if k == "" {
+			continue
+		}
+		keys[k] = struct{}{}
+	}
+
+	if len(keys) == 0 {
+		return nil
+	}
+
+	return keys
 }
 
 // ===== helpers =====
