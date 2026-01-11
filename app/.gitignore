@@ -9,6 +9,9 @@
 *.test
 *.out
 
+main
+yt-summary-server
+
 # ===== Go workspace =====
 /vendor/
 /go.work

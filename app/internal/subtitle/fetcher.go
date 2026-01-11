@@ -58,6 +58,10 @@ func fetchTitle(ctx context.Context, url string) (string, error) {
 		args = append(args, "--user-agent", *cfg.YTDLPUserAgent)
 	}
 
+	if cfg.YTDLPJSRuntimes != nil {
+		args = append(args, "--js-runtimes", *cfg.YTDLPJSRuntimes)
+	}
+
 	args = append(args, url)
 
 	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
@@ -98,6 +102,10 @@ func fetchAndClean(ctx context.Context, url string) (string, error) {
 
 	if cfg.YTDLPUserAgent != nil {
 		args = append(args, "--user-agent", *cfg.YTDLPUserAgent)
+	}
+
+	if cfg.YTDLPJSRuntimes != nil {
+		args = append(args, "--js-runtimes", *cfg.YTDLPJSRuntimes)
 	}
 
 	args = append(args, url)

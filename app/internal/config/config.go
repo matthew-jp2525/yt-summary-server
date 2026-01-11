@@ -13,6 +13,7 @@ type Config struct {
 	YTDLPPath       string
 	YTDLPCookiePath *string
 	YTDLPUserAgent  *string
+	YTDLPJSRuntimes *string
 
 	Debug bool
 }
@@ -35,6 +36,13 @@ func Load() Config {
 		ytdlpUserAgent = &maybeYTDLPUserAgent
 	}
 
+	var ytdlpJSRuntimes *string
+	maybeYTDLPJSRuntimes := os.Getenv("YTDLP_JS_RUNTIMES")
+
+	if maybeYTDLPJSRuntimes != "" {
+		ytdlpJSRuntimes = &maybeYTDLPJSRuntimes
+	}
+
 	return Config{
 		Port: getOr("PORT", "8080"),
 
@@ -42,6 +50,7 @@ func Load() Config {
 		YTDLPPath:       getOr("YTDLP_PATH", "yt-dlp"),
 		YTDLPCookiePath: ytdlpCookiePath,
 		YTDLPUserAgent:  ytdlpUserAgent,
+		YTDLPJSRuntimes: ytdlpJSRuntimes,
 
 		Debug: getBool("DEBUG"),
 	}

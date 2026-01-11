@@ -22,8 +22,19 @@
           - nginx
           - certbot
           - python3-certbot-nginx
-          - yt-dlp
         state: present
+
+    - name: Check if yt-dlp already exists
+      stat:
+        path: /usr/local/bin/yt-dlp
+      register: yt_dlp_stat
+
+    - name: Download official yt-dlp binary if not present
+      get_url:
+        url: https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
+        dest: /usr/local/bin/yt-dlp
+        mode: '0755'
+      when: not yt_dlp_stat.stat.exists
 
     - name: Create application user
       user:

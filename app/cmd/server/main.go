@@ -45,6 +45,10 @@ func main() {
 		log.Printf("using user agent: %q", *cfg.YTDLPUserAgent)
 	}
 
+	if cfg.YTDLPJSRuntimes != nil {
+		log.Printf("using js runtimes: %q", *cfg.YTDLPJSRuntimes)
+	}
+
 	log.Printf("listening on %s", addr)
 	log.Fatal(server.ListenAndServe())
 }
