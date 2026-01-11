@@ -57,6 +57,10 @@ func main() {
 
 	logger.Init(cfg.Debug)
 
+	if cfg.Debug {
+		logger.Debug.Println("Debug log is enabled")
+	}
+
 	httpapi.SetConfig(&cfg)
 	subtitle.SetConfig(&cfg)
 	summarizer.SetConfig(&cfg)

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"log"
 	"os"
 )
@@ -18,7 +19,6 @@ func Init(debug bool) {
 	if debug {
 		Debug = log.New(os.Stdout, "[debug] ", log.LstdFlags|log.Lshortfile)
 	} else {
-		Debug = log.New(os.Stdout, "", 0)
-		Debug.SetOutput(os.Stderr)
+		Debug = log.New(io.Discard, "", 0)
 	}
 }
