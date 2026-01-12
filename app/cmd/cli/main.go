@@ -15,30 +15,18 @@ import (
 	"github.com/matthew-jp2525/yt-summary-server/internal/summarizer"
 )
 
-func main() {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "usage: <command> <youtube_url>\n")
-		flag.PrintDefaults()
-	}
-	flag.Parse()
+func runTranscript(ctx context.Context, url string) {
+	info, err := subtitle.FetchVideoInfo(ctx, url)
 
-	if flag.NArg() < 1 {
-		flag.Usage()
+	if err != nil {
+		logger.Error.Printf("failed: %v", err)
 		os.Exit(1)
 	}
 
-	url := flag.Arg(0)
+	fmt.Println(info.Title + "\n\n" + info.Text)
+}
 
-	_ = godotenv.Load()
-
-	cfg := config.Load()
-	logger.Init(cfg.Debug)
-	subtitle.SetConfig(&cfg)
-	summarizer.SetConfig(&cfg)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-
+func runSummarize(ctx context.Context, url string) {
 	info, err := subtitle.FetchVideoInfo(ctx, url)
 	if err != nil {
 		logger.Error.Printf("failed: %v", err)
@@ -52,4 +40,41 @@ func main() {
 	}
 
 	fmt.Println(info.Title + "\n\n" + summary)
+}
+
+func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: <command> <summarize|transcript> <youtube_url>\n")
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+
+	if flag.NArg() < 2 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	subcommand := flag.Arg(0)
+	url := flag.Arg(1)
+
+	_ = godotenv.Load()
+
+	cfg := config.Load()
+	logger.Init(cfg.Debug)
+	subtitle.SetConfig(&cfg)
+	summarizer.SetConfig(&cfg)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	switch subcommand {
+	case "transcript":
+		runTranscript(ctx, url)
+	case "summarize":
+		runSummarize(ctx, url)
+	default:
+		flag.Usage()
+		os.Exit(1)
+	}
+
 }

@@ -67,6 +67,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/summarize", httpapi.SummarizeHandler)
+	mux.HandleFunc("/transcript", httpapi.TranscriptHandler)
 
 	authEnabled := isAPIKeyAuthEnabled(cfg.Env, cfg.DisableAPIKeyAuth)
 
