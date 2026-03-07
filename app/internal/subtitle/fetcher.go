@@ -73,25 +73,13 @@ func fetchTitle(ctx context.Context, url string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-func fetchAndClean(ctx context.Context, url string) (string, error) {
-	if err := validateYoutubeURL(url); err != nil {
-		return "", err
-	}
-
-	tmpDir, err := os.MkdirTemp("", "yt-sub")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(tmpDir)
-
-	outTemplate := filepath.Join(tmpDir, "sub")
-
+func getArgs(url string, lang string, outTemplate string) []string {
 	args := []string{
 		"--quiet",
 		"--no-warnings",
 		"--skip-download",
 		"--write-auto-subs",
-		"--sub-lang", "ja",
+		"--sub-lang", lang,
 		"--sub-format", "vtt",
 		"-o", outTemplate,
 	}
@@ -110,10 +98,33 @@ func fetchAndClean(ctx context.Context, url string) (string, error) {
 
 	args = append(args, url)
 
-	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
+	return args
+}
 
-	if err := cmd.Run(); err != nil {
+func fetchAndClean(ctx context.Context, url string) (string, error) {
+	if err := validateYoutubeURL(url); err != nil {
 		return "", err
+	}
+
+	tmpDir, err := os.MkdirTemp("", "yt-sub")
+	if err != nil {
+		return "", err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	outTemplate := filepath.Join(tmpDir, "sub")
+
+	// jaで失敗する場合にはenでも試す
+	args := getArgs(url, "ja", outTemplate)
+	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
+	err = cmd.Run()
+
+	if err != nil {
+		args = getArgs(url, "en", outTemplate)
+		cmd = exec.CommandContext(ctx, "yt-dlp", args...)
+		if err = cmd.Run(); err != nil {
+			return "", err
+		}
 	}
 
 	files, _ := filepath.Glob(filepath.Join(tmpDir, "*.vtt"))
