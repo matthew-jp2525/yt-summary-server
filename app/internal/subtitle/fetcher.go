@@ -32,7 +32,7 @@ func validateYoutubeURL(value string) error {
 
 	host := u.Hostname()
 
-	if host != "youtu.bu" &&
+	if host != "youtu.be" &&
 		host != "youtube.com" &&
 		host != "www.youtube.com" &&
 		host != "m.youtube.com" {
